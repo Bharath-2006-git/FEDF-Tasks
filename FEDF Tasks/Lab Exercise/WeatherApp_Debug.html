@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather App Debug</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f0f0f0;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        input, button {
+            padding: 10px;
+            margin: 5px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            cursor: pointer;
+        }
+        .error {
+            color: red;
+            background: #ffebee;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .weather-info {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .debug {
+            background: #fff3e0;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            font-family: monospace;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Weather App Debug Version</h1>
+        
+        <div>
+            <input type="text" id="cityInput" placeholder="Enter city name..." value="London">
+            <button onclick="testWeather()">Get Weather</button>
+            <button onclick="testAPI()">Test API Direct</button>
+        </div>
+        
+        <div id="error" class="error" style="display: none;"></div>
+        <div id="debug" class="debug"></div>
+        <div id="weatherInfo" class="weather-info" style="display: none;"></div>
+    </div>
+
+    <script>
+        const API_KEY = '9fa8ffb69ad4c78f946293f4e20c622f';
+        const API_URL = 'https://api.openweathermap.org/data/2.5/weather';
+
+        function log(message) {
+            const debugDiv = document.getElementById('debug');
+            debugDiv.innerHTML += new Date().toLocaleTimeString() + ': ' + message + '<br>';
+            console.log(message);
+        }
+
+        function showError(message) {
+            const errorDiv = document.getElementById('error');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+            log('ERROR: ' + message);
+        }
+
+        function hideError() {
+            document.getElementById('error').style.display = 'none';
+        }
+
+        async function testAPI() {
+            log('Testing API direct call...');
+            const city = document.getElementById('cityInput').value || 'London';
+            const url = `${API_URL}?q=${city}&appid=${API_KEY}&units=metric`;
+            
+            log('API URL: ' + url);
+            
+            try {
+                log('Making fetch request...');
+                const response = await fetch(url);
+                log('Response status: ' + response.status);
+                log('Response ok: ' + response.ok);
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    log('Error response: ' + errorText);
+                    showError(`API Error ${response.status}: ${errorText}`);
+                    return;
+                }
+                
+                const data = await response.json();
+                log('API Response received successfully');
+                log('Data keys: ' + Object.keys(data).join(', '));
+                
+                document.getElementById('debug').innerHTML += '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
+                
+            } catch (error) {
+                log('Fetch error: ' + error.message);
+                showError('Network error: ' + error.message);
+            }
+        }
+
+        async function testWeather() {
+            hideError();
+            log('Starting weather test...');
+            
+            const city = document.getElementById('cityInput').value.trim();
+            if (!city) {
+                showError('Please enter a city name');
+                return;
+            }
+
+            const url = `${API_URL}?q=${encodeURIComponent(city)}&appid=${API_KEY}&units=metric`;
+            log('Fetching weather for: ' + city);
+
+            try {
+                const response = await fetch(url);
+                log('Response received, status: ' + response.status);
+
+                if (!response.ok) {
+                    if (response.status === 404) {
+                        showError('City not found. Please check the spelling.');
+                    } else if (response.status === 401) {
+                        showError('Invalid API key.');
+                    } else {
+                        showError(`API Error: ${response.status}`);
+                    }
+                    return;
+                }
+
+                const data = await response.json();
+                log('Weather data received successfully');
+                
+                // Display weather info
+                const weatherDiv = document.getElementById('weatherInfo');
+                weatherDiv.innerHTML = `
+                    <h2>${data.name}, ${data.sys.country}</h2>
+                    <p><strong>Temperature:</strong> ${Math.round(data.main.temp)}°C</p>
+                    <p><strong>Feels like:</strong> ${Math.round(data.main.feels_like)}°C</p>
+                    <p><strong>Weather:</strong> ${data.weather[0].description}</p>
+                    <p><strong>Humidity:</strong> ${data.main.humidity}%</p>
+                    <p><strong>Wind Speed:</strong> ${data.wind.speed} m/s</p>
+                    <p><strong>Pressure:</strong> ${data.main.pressure} hPa</p>
+                `;
+                weatherDiv.style.display = 'block';
+                
+            } catch (error) {
+                log('Error in testWeather: ' + error.message);
+                showError('Error: ' + error.message);
+            }
+        }
+
+        // Test on page load
+        window.onload = function() {
+            log('Page loaded, testing API...');
+            testAPI();
+        };
+    </script>
+</body>
+</html>
