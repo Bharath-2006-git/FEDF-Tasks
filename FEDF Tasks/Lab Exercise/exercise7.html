@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Online Bookstore - Exercise 7</title>
+    <link rel="stylesheet" href="exercise7.css">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>📚 Online Bookstore</h1>
+            <div class="cart-icon">
+                <span id="cart-count">0</span>
+                <button id="toggle-cart">🛒 Cart</button>
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+        <!-- Books Section -->
+        <section id="books-section">
+            <h2>Available Books</h2>
+            <div class="filter-section">
+                <label for="filter-availability">Filter by:</label>
+                <select id="filter-availability">
+                    <option value="all">All Books</option>
+                    <option value="in-stock">In Stock Only</option>
+                    <option value="out-of-stock">Out of Stock</option>
+                </select>
+            </div>
+            <div id="books-container" class="books-grid">
+                <!-- Books will be dynamically loaded here -->
+            </div>
+        </section>
+
+        <!-- Cart Section -->
+        <section id="cart-section" class="hidden">
+            <h2>Shopping Cart</h2>
+            <div id="cart-container">
+                <div id="cart-items">
+                    <!-- Cart items will be dynamically added here -->
+                </div>
+                <div id="cart-summary">
+                    <div class="cart-total">
+                        <strong>Total: $<span id="cart-total">0.00</span></strong>
+                    </div>
+                    <div class="cart-actions">
+                        <button id="clear-cart" class="btn-secondary">Clear Cart</button>
+                        <button id="checkout" class="btn-primary">Proceed to Checkout</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Checkout Modal -->
+        <div id="checkout-modal" class="modal hidden">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <h3>Checkout Summary</h3>
+                <div id="checkout-items"></div>
+                <div class="checkout-total">
+                    <h4>Total: $<span id="checkout-total">0.00</span></h4>
+                </div>
+                <p>Thank you for your purchase! This is a mock checkout.</p>
+                <button id="complete-purchase" class="btn-primary">Complete Purchase</button>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2025 Online Bookstore - Exercise 7: Modular JavaScript and JSON</p>
+        </div>
+    </footer>
+
+    <!-- Loading the main script as a module -->
+    <script type="module" src="exercise7.js"></script>
+</body>
+</html>

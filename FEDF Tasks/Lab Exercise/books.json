@@ -1,0 +1,100 @@
+{
+  "books": [
+    {
+      "id": 1,
+      "title": "The Great Gatsby",
+      "author": "F. Scott Fitzgerald",
+      "price": 12.99,
+      "availability": "in-stock",
+      "description": "A classic American novel set in the Jazz Age, exploring themes of wealth, love, and the American Dream."
+    },
+    {
+      "id": 2,
+      "title": "To Kill a Mockingbird",
+      "author": "Harper Lee",
+      "price": 14.50,
+      "availability": "in-stock",
+      "description": "A powerful story of racial injustice and childhood innocence in the American South."
+    },
+    {
+      "id": 3,
+      "title": "1984",
+      "author": "George Orwell",
+      "price": 13.25,
+      "availability": "out-of-stock",
+      "description": "A dystopian novel about totalitarianism and surveillance in a future society."
+    },
+    {
+      "id": 4,
+      "title": "Pride and Prejudice",
+      "author": "Jane Austen",
+      "price": 11.75,
+      "availability": "in-stock",
+      "description": "A romantic novel exploring love, class, and social expectations in Regency England."
+    },
+    {
+      "id": 5,
+      "title": "The Catcher in the Rye",
+      "author": "J.D. Salinger",
+      "price": 15.99,
+      "availability": "in-stock",
+      "description": "A coming-of-age story following teenage Holden Caulfield in New York City."
+    },
+    {
+      "id": 6,
+      "title": "Harry Potter and the Sorcerer's Stone",
+      "author": "J.K. Rowling",
+      "price": 18.99,
+      "availability": "in-stock",
+      "description": "The first book in the magical Harry Potter series about a young wizard's adventures."
+    },
+    {
+      "id": 7,
+      "title": "The Lord of the Rings",
+      "author": "J.R.R. Tolkien",
+      "price": 25.50,
+      "availability": "out-of-stock",
+      "description": "An epic fantasy trilogy about hobbits, wizards, and the quest to destroy the One Ring."
+    },
+    {
+      "id": 8,
+      "title": "The Hunger Games",
+      "author": "Suzanne Collins",
+      "price": 16.25,
+      "availability": "in-stock",
+      "description": "A dystopian young adult novel about survival and rebellion in a post-apocalyptic world."
+    },
+    {
+      "id": 9,
+      "title": "Brave New World",
+      "author": "Aldous Huxley",
+      "price": 14.99,
+      "availability": "in-stock",
+      "description": "A science fiction novel exploring themes of technology, society, and human nature."
+    },
+    {
+      "id": 10,
+      "title": "The Da Vinci Code",
+      "author": "Dan Brown",
+      "price": 17.50,
+      "availability": "out-of-stock",
+      "description": "A mystery thriller involving art, history, and religious conspiracies."
+    },
+    {
+      "id": 11,
+      "title": "Dune",
+      "author": "Frank Herbert",
+      "price": 19.99,
+      "availability": "in-stock",
+      "description": "A science fiction epic set on the desert planet Arrakis, featuring politics, religion, and ecology."
+    },
+    {
+      "id": 12,
+      "title": "The Handmaid's Tale",
+      "author": "Margaret Atwood",
+      "price": 15.75,
+      "availability": "in-stock",
+      "description": "A dystopian novel about women's rights and reproductive freedom in a totalitarian society."
+    }
+  ]
+}
