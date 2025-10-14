@@ -1,419 +1,375 @@
-// exercise7.js - Main application script
-// Entry point that imports and orchestrates all modules for the Online Bookstore
 
-import { initializeBookDisplay, loadBooks, findBookById } from './bookDisplay.js';
-import { initializeCartManager, validateCartItems, removeInvalidItems } from './cartManager.js';
-import { initializeUI, showMessage } from './uiManager.js';
-
-/**
- * Main Application Class
- * Coordinates all modules and handles application lifecycle
- */
-class BookstoreApp {
-    constructor() {
-        this.books = [];
-        this.cartManager = null;
-        this.uiManager = null;
-        this.isInitialized = false;
+const booksData = [
+    {
+        id: 1,
+        title: "The Great Gatsby",
+        author: "F. Scott Fitzgerald",
+        price: 12.99,
+        availability: "in-stock"
+    },
+    {
+        id: 2,
+        title: "To Kill a Mockingbird",
+        author: "Harper Lee",
+        price: 14.50,
+        availability: "in-stock"
+    },
+    {
+        id: 3,
+        title: "1984",
+        author: "George Orwell",
+        price: 13.25,
+        availability: "out-of-stock"
+    },
+    {
+        id: 4,
+        title: "Pride and Prejudice",
+        author: "Jane Austen",
+        price: 11.75,
+        availability: "in-stock"
+    },
+    {
+        id: 5,
+        title: "The Catcher in the Rye",
+        author: "J.D. Salinger",
+        price: 15.99,
+        availability: "in-stock"
+    },
+    {
+        id: 6,
+        title: "Harry Potter and the Sorcerer's Stone",
+        author: "J.K. Rowling",
+        price: 18.99,
+        availability: "in-stock"
+    },
+    {
+        id: 7,
+        title: "The Lord of the Rings",
+        author: "J.R.R. Tolkien",
+        price: 25.50,
+        availability: "out-of-stock"
+    },
+    {
+        id: 8,
+        title: "The Hunger Games",
+        author: "Suzanne Collins",
+        price: 16.25,
+        availability: "in-stock"
     }
+];
 
-    /**
-     * Initializes the entire application
-     */
-    async initialize() {
-        try {
-            console.log('🚀 Initializing Online Bookstore Application...');
-            
-            // Show loading state
-            this.showLoadingState();
+// Global variables
+let cart = [];
+let currentBooks = booksData;
+let isCartVisible = false;
 
-            // Initialize cart manager first
-            console.log('📦 Initializing Cart Manager...');
-            this.cartManager = initializeCartManager();
+// DOM Elements
+let elements = {};
 
-            // Load and display books
-            console.log('📚 Loading books...');
-            await this.initializeBooks();
-
-            // Initialize UI Manager
-            console.log('🎨 Initializing UI Manager...');
-            this.uiManager = initializeUI(this.books);
-
-            // Validate existing cart items against loaded books
-            console.log('✅ Validating cart items...');
-            this.validateAndCleanCart();
-
-            // Setup additional event listeners
-            this.setupApplicationEventListeners();
-
-            // Hide loading state
-            this.hideLoadingState();
-
-            this.isInitialized = true;
-            console.log('✨ Application initialized successfully!');
-            
-            // Show welcome message
-            showMessage('Welcome to the Online Bookstore! 📚', 'success');
-
-        } catch (error) {
-            console.error('❌ Error initializing application:', error);
-            this.handleInitializationError(error);
+// Cart Management Functions
+function loadCartFromStorage() {
+    try {
+        const savedCart = localStorage.getItem('bookstore_cart');
+        if (savedCart) {
+            cart = JSON.parse(savedCart);
         }
-    }
-
-    /**
-     * Initializes the book display system
-     */
-    async initializeBooks() {
-        try {
-            // Get books container
-            const booksContainer = document.getElementById('books-container');
-            if (!booksContainer) {
-                throw new Error('Books container element not found');
-            }
-
-            // Initialize book display and load books
-            this.books = await initializeBookDisplay(booksContainer);
-            
-            console.log(`📖 Loaded ${this.books.length} books successfully`);
-            
-            // Log book availability summary
-            const inStock = this.books.filter(book => book.availability === 'in-stock').length;
-            const outOfStock = this.books.filter(book => book.availability === 'out-of-stock').length;
-            console.log(`📊 Books in stock: ${inStock}, Out of stock: ${outOfStock}`);
-
-        } catch (error) {
-            console.error('Error loading books:', error);
-            throw new Error('Failed to load book catalog');
-        }
-    }
-
-    /**
-     * Validates cart items and removes any invalid ones
-     */
-    validateAndCleanCart() {
-        try {
-            const invalidItems = validateCartItems(this.books);
-            
-            if (invalidItems.length > 0) {
-                console.log('🧹 Cleaning invalid cart items:', invalidItems);
-                removeInvalidItems(invalidItems);
-                showMessage('Some items were removed from your cart as they are no longer available.', 'info');
-            }
-        } catch (error) {
-            console.error('Error validating cart:', error);
-        }
-    }
-
-    /**
-     * Sets up application-wide event listeners
-     */
-    setupApplicationEventListeners() {
-        // Handle page visibility changes
-        document.addEventListener('visibilitychange', () => {
-            if (!document.hidden && this.isInitialized) {
-                // Refresh data when page becomes visible again
-                this.handlePageVisible();
-            }
-        });
-
-        // Handle window beforeunload to save any pending changes
-        window.addEventListener('beforeunload', () => {
-            this.handlePageUnload();
-        });
-
-        // Handle errors globally
-        window.addEventListener('error', (event) => {
-            console.error('Global error caught:', event.error);
-            this.handleGlobalError(event.error);
-        });
-
-        // Handle unhandled promise rejections
-        window.addEventListener('unhandledrejection', (event) => {
-            console.error('Unhandled promise rejection:', event.reason);
-            this.handleGlobalError(event.reason);
-        });
-
-        // Handle online/offline status
-        window.addEventListener('online', () => {
-            showMessage('Connection restored! 🌐', 'success');
-        });
-
-        window.addEventListener('offline', () => {
-            showMessage('You are offline. Some features may not work. 📡', 'info');
-        });
-
-        // Custom application events
-        document.addEventListener('bookAddedToCart', (event) => {
-            this.handleBookAddedToCart(event.detail);
-        });
-
-        document.addEventListener('cartCleared', () => {
-            this.handleCartCleared();
-        });
-    }
-
-    /**
-     * Shows loading state
-     */
-    showLoadingState() {
-        const loadingHTML = `
-            <div class="loading-overlay" style="
-                position: fixed;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                background: rgba(255, 255, 255, 0.9);
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                z-index: 9999;
-                font-size: 1.2rem;
-                color: #667eea;
-            ">
-                <div>
-                    <div style="text-align: center;">
-                        <div style="font-size: 3rem; margin-bottom: 1rem;">📚</div>
-                        <div>Loading Online Bookstore...</div>
-                    </div>
-                </div>
-            </div>
-        `;
-        
-        document.body.insertAdjacentHTML('beforeend', loadingHTML);
-    }
-
-    /**
-     * Hides loading state
-     */
-    hideLoadingState() {
-        const loadingOverlay = document.querySelector('.loading-overlay');
-        if (loadingOverlay) {
-            loadingOverlay.remove();
-        }
-    }
-
-    /**
-     * Handles initialization errors
-     * @param {Error} error - The error that occurred
-     */
-    handleInitializationError(error) {
-        this.hideLoadingState();
-        
-        const errorMessage = `
-            <div class="error-state" style="
-                text-align: center;
-                padding: 3rem;
-                color: #dc3545;
-                background: #f8d7da;
-                border: 1px solid #f5c6cb;
-                border-radius: 10px;
-                margin: 2rem;
-            ">
-                <h2>❌ Application Failed to Load</h2>
-                <p><strong>Error:</strong> ${error.message}</p>
-                <p>Please refresh the page to try again.</p>
-                <button onclick="window.location.reload()" style="
-                    background: #dc3545;
-                    color: white;
-                    border: none;
-                    padding: 10px 20px;
-                    border-radius: 5px;
-                    cursor: pointer;
-                    font-size: 1rem;
-                    margin-top: 1rem;
-                ">
-                    Reload Page
-                </button>
-            </div>
-        `;
-
-        const main = document.querySelector('main');
-        if (main) {
-            main.innerHTML = errorMessage;
-        } else {
-            document.body.innerHTML = errorMessage;
-        }
-    }
-
-    /**
-     * Handles page becoming visible
-     */
-    handlePageVisible() {
-        console.log('👁️ Page became visible, refreshing cart state...');
-        // Could add logic here to refresh data or sync cart
-    }
-
-    /**
-     * Handles page unload
-     */
-    handlePageUnload() {
-        console.log('👋 Page unloading, saving any pending changes...');
-        // Cart is automatically saved via localStorage in cartManager
-    }
-
-    /**
-     * Handles global errors
-     * @param {Error} error - The error that occurred
-     */
-    handleGlobalError(error) {
-        if (this.isInitialized) {
-            showMessage('An unexpected error occurred. Please try again.', 'error');
-        }
-    }
-
-    /**
-     * Handles book added to cart events
-     * @param {Object} bookData - Data about the book added
-     */
-    handleBookAddedToCart(bookData) {
-        console.log('📖➕ Book added to cart:', bookData);
-        // Could add additional logic here like analytics tracking
-    }
-
-    /**
-     * Handles cart cleared events
-     */
-    handleCartCleared() {
-        console.log('🧹 Cart was cleared');
-        // Could add additional logic here
-    }
-
-    /**
-     * Gets application statistics
-     * @returns {Object} Application stats
-     */
-    getAppStats() {
-        if (!this.isInitialized) {
-            return { error: 'Application not initialized' };
-        }
-
-        return {
-            totalBooks: this.books.length,
-            booksInStock: this.books.filter(book => book.availability === 'in-stock').length,
-            booksOutOfStock: this.books.filter(book => book.availability === 'out-of-stock').length,
-            cartItemCount: this.cartManager ? this.cartManager.getCartItemCount() : 0,
-            cartTotal: this.cartManager ? this.cartManager.getCartTotal() : 0
-        };
-    }
-
-    /**
-     * Searches for books
-     * @param {string} query - Search query
-     * @returns {Array} Array of matching books
-     */
-    searchBooks(query) {
-        if (!query || !this.books.length) {
-            return this.books;
-        }
-
-        const searchTerm = query.toLowerCase();
-        return this.books.filter(book => 
-            book.title.toLowerCase().includes(searchTerm) ||
-            book.author.toLowerCase().includes(searchTerm)
-        );
-    }
-
-    /**
-     * Gets a book by ID
-     * @param {number|string} bookId - ID of the book
-     * @returns {Object|null} Book object or null if not found
-     */
-    getBookById(bookId) {
-        return findBookById(this.books, bookId);
-    }
-
-    /**
-     * Refreshes the application data
-     */
-    async refresh() {
-        try {
-            console.log('🔄 Refreshing application data...');
-            showMessage('Refreshing data...', 'info');
-            
-            await this.initializeBooks();
-            this.validateAndCleanCart();
-            
-            showMessage('Data refreshed successfully!', 'success');
-        } catch (error) {
-            console.error('Error refreshing data:', error);
-            showMessage('Failed to refresh data.', 'error');
-        }
-    }
-
-    /**
-     * Exports cart data (for potential future features)
-     * @returns {Object} Cart data
-     */
-    exportCartData() {
-        if (!this.cartManager) {
-            return null;
-        }
-        
-        return {
-            items: this.cartManager.getCartItems(),
-            total: this.cartManager.getCartTotal(),
-            itemCount: this.cartManager.getCartItemCount(),
-            exportedAt: new Date().toISOString()
-        };
+    } catch (error) {
+        console.error('Error loading cart:', error);
+        cart = [];
     }
 }
 
-/**
- * Global application instance
- */
-let appInstance = null;
+function saveCartToStorage() {
+    try {
+        localStorage.setItem('bookstore_cart', JSON.stringify(cart));
+    } catch (error) {
+        console.error('Error saving cart:', error);
+    }
+}
 
-/**
- * Initializes the application when DOM is ready
- */
-async function initializeApp() {
-    // Ensure DOM is fully loaded
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', initializeApp);
+function addToCart(book) {
+    if (book.availability !== 'in-stock') {
+        showMessage('This book is out of stock!', 'error');
+        return false;
+    }
+
+    const existingItem = cart.find(item => item.id === book.id);
+    if (existingItem) {
+        existingItem.quantity += 1;
+    } else {
+        cart.push({
+            id: book.id,
+            title: book.title,
+            author: book.author,
+            price: book.price,
+            quantity: 1
+        });
+    }
+    
+    saveCartToStorage();
+    updateCartDisplay();
+    showMessage(`"${book.title}" added to cart!`, 'success');
+    return true;
+}
+
+function removeFromCart(bookId) {
+    const index = cart.findIndex(item => item.id === parseInt(bookId));
+    if (index !== -1) {
+        cart.splice(index, 1);
+        saveCartToStorage();
+        updateCartDisplay();
+        showMessage('Item removed from cart', 'info');
+        return true;
+    }
+    return false;
+}
+
+function clearCart() {
+    if (cart.length === 0) {
+        showMessage('Cart is already empty', 'info');
+        return;
+    }
+    
+    if (confirm('Are you sure you want to clear your cart?')) {
+        cart = [];
+        saveCartToStorage();
+        updateCartDisplay();
+        showMessage('Cart cleared', 'info');
+    }
+}
+
+function getCartTotal() {
+    return cart.reduce((total, item) => total + (item.price * item.quantity), 0);
+}
+
+function getCartItemCount() {
+    return cart.reduce((total, item) => total + item.quantity, 0);
+}
+
+// Book Display Functions
+function createBookCard(book) {
+    const bookCard = document.createElement('div');
+    bookCard.className = `book-card ${book.availability === 'out-of-stock' ? 'out-of-stock' : ''}`;
+    
+    const availabilityClass = book.availability === 'in-stock' ? 'in-stock' : 'out-of-stock';
+    const availabilityText = book.availability === 'in-stock' ? 'In Stock' : 'Out of Stock';
+    const buttonDisabled = book.availability === 'out-of-stock' ? 'disabled' : '';
+    const buttonText = book.availability === 'out-of-stock' ? 'Out of Stock' : 'Add to Cart';
+
+    bookCard.innerHTML = `
+        <div class="book-title">${book.title}</div>
+        <div class="book-author">by ${book.author}</div>
+        <div class="book-price">$${book.price.toFixed(2)}</div>
+        <div class="book-availability ${availabilityClass}">${availabilityText}</div>
+        <button class="btn-primary" onclick="handleAddToCart(${book.id})" ${buttonDisabled}>
+            ${buttonText}
+        </button>
+    `;
+
+    return bookCard;
+}
+
+function renderBooks(books) {
+    const container = elements.booksContainer;
+    container.innerHTML = '';
+
+    if (!books || books.length === 0) {
+        container.innerHTML = '<div class="empty-state"><h3>No books found</h3></div>';
         return;
     }
 
-    try {
-        // Create and initialize app instance
-        appInstance = new BookstoreApp();
-        await appInstance.initialize();
-        
-        // Make app instance available globally for debugging
-        window.bookstoreApp = appInstance;
-        
-    } catch (error) {
-        console.error('Failed to initialize application:', error);
+    books.forEach(book => {
+        const bookCard = createBookCard(book);
+        container.appendChild(bookCard);
+    });
+}
+
+function filterBooks(filterValue) {
+    let filteredBooks = currentBooks;
+    
+    if (filterValue === 'in-stock') {
+        filteredBooks = currentBooks.filter(book => book.availability === 'in-stock');
+    } else if (filterValue === 'out-of-stock') {
+        filteredBooks = currentBooks.filter(book => book.availability === 'out-of-stock');
+    }
+    
+    renderBooks(filteredBooks);
+}
+
+// UI Functions
+function updateCartDisplay() {
+    updateCartCount();
+    updateCartItems();
+    updateCartTotal();
+}
+
+function updateCartCount() {
+    elements.cartCount.textContent = getCartItemCount();
+    elements.cartCount.style.display = getCartItemCount() > 0 ? 'inline-block' : 'none';
+}
+
+function updateCartItems() {
+    const container = elements.cartItems;
+    container.innerHTML = '';
+    
+    if (cart.length === 0) {
+        container.innerHTML = '<div class="empty-state"><h3>Your cart is empty</h3><p>Add some books to get started!</p></div>';
+        elements.checkoutBtn.disabled = true;
+        return;
+    }
+    
+    elements.checkoutBtn.disabled = false;
+    
+    cart.forEach(item => {
+        const cartItem = document.createElement('div');
+        cartItem.className = 'cart-item';
+        cartItem.innerHTML = `
+            <div class="cart-item-info">
+                <div class="cart-item-title">${item.title}</div>
+                <div class="cart-item-author">by ${item.author}</div>
+                <div>Quantity: ${item.quantity}</div>
+            </div>
+            <div class="cart-item-price">$${(item.price * item.quantity).toFixed(2)}</div>
+            <button class="remove-btn" onclick="removeFromCart(${item.id})">Remove</button>
+        `;
+        container.appendChild(cartItem);
+    });
+}
+
+function updateCartTotal() {
+    elements.cartTotal.textContent = getCartTotal().toFixed(2);
+}
+
+function toggleCart() {
+    isCartVisible = !isCartVisible;
+    
+    if (isCartVisible) {
+        elements.cartSection.classList.remove('hidden');
+        elements.booksSection.style.display = 'none';
+        elements.toggleCartBtn.textContent = '📖 Books';
+        updateCartDisplay();
+    } else {
+        elements.cartSection.classList.add('hidden');
+        elements.booksSection.style.display = 'block';
+        elements.toggleCartBtn.textContent = '🛒 Cart';
     }
 }
 
-/**
- * Exported functions for external access
- */
-export { BookstoreApp, initializeApp };
-
-/**
- * Auto-initialize when script loads
- */
-console.log('📚 Online Bookstore - Exercise 7: Modular JavaScript and JSON');
-console.log('🔧 Initializing application...');
-
-// Start the application
-initializeApp();
-
-// Development utilities (available in browser console)
-if (typeof window !== 'undefined') {
-    window.bookstoreUtils = {
-        getAppStats: () => appInstance ? appInstance.getAppStats() : null,
-        searchBooks: (query) => appInstance ? appInstance.searchBooks(query) : [],
-        refreshApp: () => appInstance ? appInstance.refresh() : null,
-        exportCart: () => appInstance ? appInstance.exportCartData() : null,
-        getBookById: (id) => appInstance ? appInstance.getBookById(id) : null
-    };
-
-    console.log('🔧 Development utilities available at window.bookstoreUtils');
-    console.log('📊 Get app stats: bookstoreUtils.getAppStats()');
-    console.log('🔍 Search books: bookstoreUtils.searchBooks("query")');
-    console.log('🔄 Refresh app: bookstoreUtils.refreshApp()');
+function showMessage(message, type = 'info') {
+    // Remove existing message
+    const existing = document.querySelector('.message');
+    if (existing) existing.remove();
+    
+    const messageEl = document.createElement('div');
+    messageEl.className = 'message';
+    messageEl.textContent = message;
+    messageEl.style.cssText = `
+        position: fixed; top: 20px; right: 20px; padding: 10px 15px;
+        color: white; border-radius: 5px; z-index: 1001; font-weight: bold;
+        background: ${type === 'success' ? '#4CAF50' : type === 'error' ? '#f44336' : '#2196F3'};
+    `;
+    
+    document.body.appendChild(messageEl);
+    setTimeout(() => messageEl.remove(), 3000);
 }
+
+function showCheckoutModal() {
+    if (cart.length === 0) {
+        showMessage('Your cart is empty!', 'error');
+        return;
+    }
+    
+    const modal = elements.checkoutModal;
+    const itemsContainer = elements.checkoutItems;
+    
+    itemsContainer.innerHTML = '';
+    cart.forEach(item => {
+        const div = document.createElement('div');
+        div.innerHTML = `${item.title} (x${item.quantity}) - $${(item.price * item.quantity).toFixed(2)}`;
+        itemsContainer.appendChild(div);
+    });
+    
+    elements.checkoutTotal.textContent = getCartTotal().toFixed(2);
+    modal.classList.remove('hidden');
+    modal.classList.add('show');
+}
+
+function hideCheckoutModal() {
+    elements.checkoutModal.classList.add('hidden');
+    elements.checkoutModal.classList.remove('show');
+}
+
+function completePurchase() {
+    clearCart();
+    hideCheckoutModal();
+    showMessage('Thank you for your purchase!', 'success');
+    if (isCartVisible) toggleCart();
+}
+
+// Event Handlers
+function handleAddToCart(bookId) {
+    const book = booksData.find(b => b.id === bookId);
+    if (book) {
+        addToCart(book);
+    }
+}
+
+function handleFilterChange() {
+    const filterValue = elements.filterSelect.value;
+    filterBooks(filterValue);
+}
+
+// Initialize DOM Elements
+function initializeElements() {
+    elements = {
+        cartCount: document.getElementById('cart-count'),
+        toggleCartBtn: document.getElementById('toggle-cart'),
+        booksSection: document.getElementById('books-section'),
+        cartSection: document.getElementById('cart-section'),
+        booksContainer: document.getElementById('books-container'),
+        cartItems: document.getElementById('cart-items'),
+        cartTotal: document.getElementById('cart-total'),
+        clearCartBtn: document.getElementById('clear-cart'),
+        checkoutBtn: document.getElementById('checkout'),
+        checkoutModal: document.getElementById('checkout-modal'),
+        checkoutItems: document.getElementById('checkout-items'),
+        checkoutTotal: document.getElementById('checkout-total'),
+        completePurchaseBtn: document.getElementById('complete-purchase'),
+        closeModal: document.querySelector('.close'),
+        filterSelect: document.getElementById('filter-availability')
+    };
+}
+
+// Setup Event Listeners
+function setupEventListeners() {
+    elements.toggleCartBtn.addEventListener('click', toggleCart);
+    elements.clearCartBtn.addEventListener('click', clearCart);
+    elements.checkoutBtn.addEventListener('click', showCheckoutModal);
+    elements.completePurchaseBtn.addEventListener('click', completePurchase);
+    elements.closeModal.addEventListener('click', hideCheckoutModal);
+    elements.filterSelect.addEventListener('change', handleFilterChange);
+    
+    // Close modal when clicking outside
+    elements.checkoutModal.addEventListener('click', (e) => {
+        if (e.target === elements.checkoutModal) {
+            hideCheckoutModal();
+        }
+    });
+}
+
+// Initialize Application
+function initializeApp() {
+    console.log('📚 Initializing Online Bookstore...');
+    
+    initializeElements();
+    setupEventListeners();
+    loadCartFromStorage();
+    renderBooks(currentBooks);
+    updateCartDisplay();
+    
+    showMessage('Welcome to the Online Bookstore! 📚', 'success');
+    console.log('✨ Application initialized successfully!');
+}
+
+// Start the application when DOM is loaded
+document.addEventListener('DOMContentLoaded', initializeApp);
